@@ -1,5 +1,5 @@
 """
-배경 이미지 위에 CUE 로고 느낌의 워터마크 + 제목 텍스트를 입혀
+배경 이미지 위에 제목 텍스트를 입혀
 최종 인스타 포스터(세로형 1080x1350, 4:5 비율)를 만드는 모듈.
 
 한글이 깨지지 않도록 나눔고딕 폰트를 사용한다.
@@ -12,7 +12,6 @@ FONT_PATH = "/usr/share/fonts/truetype/nanum/NanumGothicExtraBold.ttf"
 FALLBACK_FONT_PATH = "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf"
 
 CANVAS_SIZE = (1080, 1350)  # 인스타그램 세로형(4:5) 비율
-ACCENT_COLOR = (212, 255, 63)  # CUE 브랜드 라임그린
 
 
 def _load_font(size: int) -> ImageFont.FreeTypeFont:
@@ -25,6 +24,10 @@ def _load_font(size: int) -> ImageFont.FreeTypeFont:
 
 
 def make_poster(background_path: str, title: str, output_path: str = "poster.png") -> str:
+    # 클로드가 만든 제목에 줄바꿈 문자가 섞여 들어오면 렌더링이 겹쳐 보이는 문제가 있어서,
+    # 줄바꿈을 공백으로 통일하고 아래 _wrap_text가 알아서 줄을 나누게 한다.
+    title = " ".join(title.split())
+
     bg = Image.open(background_path).convert("RGB").resize(CANVAS_SIZE)
 
     overlay = Image.new("RGBA", CANVAS_SIZE, (0, 0, 0, 0))
@@ -38,10 +41,6 @@ def make_poster(background_path: str, title: str, output_path: str = "poster.png
 
     draw = ImageDraw.Draw(bg)
 
-    small_font = _load_font(36)
-    draw.text((60, 1230), "CUE", font=small_font, fill=(255, 255, 255, 255))
-    draw.rectangle([60, 1210, 130, 1216], fill=ACCENT_COLOR)
-
     max_width = CANVAS_SIZE[0] - 120
     font_size = 82
     font = _load_font(font_size)
@@ -53,7 +52,7 @@ def make_poster(background_path: str, title: str, output_path: str = "poster.png
 
     line_height = font_size + 16
     total_text_height = line_height * len(lines)
-    y = CANVAS_SIZE[1] - 260 - total_text_height
+    y = CANVAS_SIZE[1] - 120 - total_text_height
 
     for line in lines:
         draw.text((60, y), line, font=font, fill=(255, 255, 255, 255))
